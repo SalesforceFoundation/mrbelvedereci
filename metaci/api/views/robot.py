@@ -64,6 +64,10 @@ class RobotTestResultViewSet(viewsets.ReadOnlyModelViewSet):
             build__planrepo__in=PlanRepository.objects.for_user(self.request.user),
         )
 
+        repo_name = self.request.query_params.get("repo_name", None)
+        if repo_name is not None:
+            buildflows = buildflows.filter(build__repo__name=repo_name)
+
         branch_name = self.request.query_params.get("branch_name", None)
         if branch_name is not None:
             buildflows = buildflows.filter(build__branch__name=branch_name)
