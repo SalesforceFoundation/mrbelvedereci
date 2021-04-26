@@ -208,6 +208,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
+                "metaci.release.context_processors.get_release_values",
             ],
         },
     }

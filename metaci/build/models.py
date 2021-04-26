@@ -428,9 +428,7 @@ class Build(models.Model):
 
         if self.plan.role == "release":
             try:
-                send_release_webhook(
-                    project_config, self.release, self.org.configuration_item
-                )
+                send_release_webhook(self.release, self.org.configuration_item)
             except Exception as err:
                 message = f"Error while sending release webhook: {err}"
                 self.logger.error(message)
