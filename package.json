@@ -76,7 +76,7 @@
     "fetch-mock": "^9.11.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",
-    "husky": "^4.3.8",
+    "husky": "^6.0.0",
     "i18next-scanner-webpack": "^0.7.0",
     "isomorphic-fetch": "^3.0.0",
     "jest": "^26.6.3",
