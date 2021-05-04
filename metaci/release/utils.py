@@ -36,6 +36,19 @@ def jwt_for_webhook():
     )
 
 
+def parse_change_case_link(change_case_link):
+    if (
+        change_case_link
+        and len(
+            change_case_link.split(f"{settings.METACI_CHANGE_CASE_URL_TEMPLATE[:-9]}")
+        )
+        > 1
+    ):  # 500 to parse beginning sequence of change case; indexing [:-9] to remove "{case_id}" from url link
+        return f"500{change_case_link.split(settings.METACI_CHANGE_CASE_URL_TEMPLATE[:-9])[1]}"
+    else:
+        raise Exception("Please provide a valid change case link.")
+
+
 def update_release_from_github(release, repo_api=None):
     if not repo_api:
         repo_api = release.repo.get_github_api()
@@ -78,7 +91,7 @@ def update_release_from_github(release, repo_api=None):
     return release
 
 
-def send_release_webhook(project_config, release, config_item=None):
+def send_release_webhook(release, config_item=None):
     if release is None or not settings.METACI_RELEASE_WEBHOOK_URL:
         return  # should we better error handle this?
     logger.info(
@@ -96,8 +109,10 @@ def send_release_webhook(project_config, release, config_item=None):
 
     payload = {
         "case_template_id": release.change_case_template.case_template_id,
-        "package_name": project_config.project__package__name,
-        "version": project_config.get_version_for_tag(tag),
+        "package_name": release.repo.name,  # Need to figure out.
+        "version": release.repo.latest_release.git_tag.strip(
+            f"{release.repo.release_tag_regex}"
+        ),  # Need to see if this is valid.
         "release_url": f"{release.repo.url}/releases/tag/{urllib.parse.quote(tag)}",
         "steps": steps,
     }
@@ -107,6 +122,15 @@ def send_release_webhook(project_config, release, config_item=None):
         json=payload,
         headers={"Authorization": f"Bearer {token}"},
     )
+    release.version_name = release.repo.latest_release.git_tag.strip(
+        f"{release.repo.release_tag_regex}"
+    )
+    release.version_number = release.repo.latest_release.git_tag.strip(
+        f"{release.repo.release_tag_regex}"
+    )
+    release.save()
+    breakpoint()
+
     result = response.json()
     if result["success"]:
         with transaction.atomic():
@@ -120,6 +144,32 @@ def send_release_webhook(project_config, release, config_item=None):
             case_url = settings.METACI_CHANGE_CASE_URL_TEMPLATE.format(case_id=case_id)
             release.change_case_link = case_url
             release.save()
+    else:
+        raise Exception("\n".join(err["message"] for err in result["errors"]))
+
+
+def send_submit_webhook(release, config_item=None):
+    if (
+        release is None
+        or not settings.METACI_RELEASE_WEBHOOK_URL
+        or not settings.METACI_START_STOP_WEBHOOK
+        or not config_item
+    ):
+        return  # should we better error handle this?
+    logger.info(
+        f"Sending release webhook for {release} to {settings.METACI_RELEASE_WEBHOOK_URL}"
+    )
+
+    payload = {"case_id": parse_change_case_link(release.change_case_link)}
+    token = jwt_for_webhook()
+    response = requests.post(
+        f"{settings.METACI_RELEASE_WEBHOOK_URL}/case/{parse_change_case_link(release.change_case_link)}/submit",
+        json=payload,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    result = response.json()
+    if result["success"]:
+        return
     else:
         raise Exception("\n".join(err["message"] for err in result["errors"]))
 

@@ -122,7 +122,16 @@ class Release(StatusModel):
         update_release_from_github(self)
 
     def save(self, *args, **kw):
+        if not self.version_number:
+            self.version_number = self.repo.latest_release.git_tag.strip(
+                f"{self.repo.release_tag_regex}"
+            )
+        if not self.version_name:
+            self.version_name = self.repo.latest_release.git_tag.strip(
+                f"{self.repo.release_tag_regex}"
+            )
         super().save(*args, **kw)
+
         self.create_default_implementation_step(
             "release_deploy",
             get_default_sandbox_date(),

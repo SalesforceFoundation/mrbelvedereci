@@ -6,10 +6,9 @@ import sys
 import cumulusci
 import django
 from django.conf import settings
+from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from django.http import HttpResponseForbidden
-from django.template import TemplateDoesNotExist
 
 
 class AboutView(TemplateView):
@@ -56,3 +55,10 @@ class AboutView(TemplateView):
 def custom_403(request, exception):
     """Always redirect users to login via GitHub"""
     return HttpResponseForbidden(render(request, "account/login.html"))
+
+
+def gus_bus_enabled(request):
+    context = {
+        "METACI_START_STOP_WEBHOOK": os.environ.get("METACI_START_STOP_WEBHOOK", False)
+    }
+    return render(request, "admin/release/release/change_form.html", context=context)
