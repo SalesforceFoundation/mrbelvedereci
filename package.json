@@ -94,7 +94,7 @@
     "run-sequence": "^2.2.1",
     "sass": "^1.32.12",
     "sass-loader": "^11.0.1",
-    "stylelint": "^13.13.0",
+    "stylelint": "^13.13.1",
     "stylelint-config-recommended-scss": "^4.2.0",
     "stylelint-scss": "^3.19.0",
     "typescript": "^4.2.4",
