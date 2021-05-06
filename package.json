@@ -60,7 +60,7 @@
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
     "chokidar": "^3.5.1",
-    "core-js": "^3.11.1",
+    "core-js": "^3.11.2",
     "coveralls": "^3.1.0",
     "css-loader": "^5.2.4",
     "css-minimizer-webpack-plugin": "^2.0.0",
